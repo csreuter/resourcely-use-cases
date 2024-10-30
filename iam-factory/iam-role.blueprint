@@ -1,0 +1,46 @@
+# Note that this Blueprint utilizes a global value collection. You must add this global value collection (provided in the iam-factory root folder) to your account for this Blueprint to work.
+
+---
+variables:
+  iam_roles.role_name:
+    desc: "The name of your role. Case insensitive and must be unique."
+    suggest: "my-role-name"
+  iam_roles.iam_effect: 
+    global_value: iam_effect
+    desc: "Allow this role to be assumable"
+  attached_policy:
+    desc: "The policy or policies to associate with this role. If you want to reference an existing policy, enter the arn"
+    default: "arn:aws:iam:::policy/policy-name"
+    links_to: resource.aws_iam_policy.arn
+---
+{{# iam_roles }}
+resource "aws_iam_role" "{{ iam_roles.role_name }}_{{ __guid }}_{{ iam_roles.__index }}" {
+  name = "{{ iam_roles.role_name }}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "{{ iam_roles.iam_effect }}"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = {
+    org_id = " {{ iam_roles.org_id | desc: "Enter your organization ID for tagging purposes" | suggest: "AZJ1245" }} "
+  }
+}
+  {{# iam_roles.iam_role_policies }}
+resource "aws_iam_role_policy_attachment" "{{ iam_roles.role_name }}_{{ __guid }}_{{ iam_roles.iam_role_policies.__index }}" {
+  role       = resource.aws_iam_role.iam_role.{{iam_roles.role_name}}_{{__guid}}_{{iam_roles.__index}}.name
+  policy_arn = {{ iam_roles.iam_role_policies.attached_policy }}
+}
+  {{/ iam_roles.iam_role_policies }}
+
+
+{{/ iam_roles }}
