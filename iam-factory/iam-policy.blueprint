@@ -1,4 +1,6 @@
 # Note that this Blueprint utilizes a global value collection. You must add this global value collection (provided in the iam-factory root folder) to your account for this Blueprint to work.
+# To use this Blueprint, sign in to your Resourcely account, create a Blueprint, and publish it.
+
 
 ---
 constants:
