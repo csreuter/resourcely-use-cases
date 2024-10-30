@@ -1,0 +1,88 @@
+---
+constants:
+  __group_name: "{{ group_name }}_{{ __guid }}"
+variables:
+  group_name:
+    desc: "Name for the IAM group. This name should be unique within the AWS account."
+    required: true
+    group: IAM Group Settings
+  users:
+    desc: "List of IAM user names to add to this IAM group."
+    required: false
+    group: IAM Group Membership
+    links_to: resource.aws_iam_user.name
+  iam_policies.iam_action_list:
+    global_value: aws_iam_actions_collection
+    group: IAM Group Policy
+    desc: "Select what permission sets you'd like this policy to have"
+  iam_policies.iam_effect:
+    global_value: iam_effect
+    group: IAM Group Policy
+    desc: "Effect to apply to the actions"
+  iam_policies.policy_name:
+    group: IAM Group Policy
+    desc: "Name of the policy to create."
+  iam_policies.resources.resource:
+    group: IAM Group Policy
+    desc: "Select the resources you'd like to associate with this policy. Link to a resource you are creating from the dropdown, or specify an arn in the format aws:servicename:::your-specific-resource."
+  iam_policies:
+    group: IAM Group Policy
+groups:
+  IAM Group Settings:
+    order: 1
+    desc: "Settings for defining the IAM group, including its name."
+  IAM Group Policy:
+    order: 2
+    desc: "Policy to create to attach to the IAM group. Choose the various effects "
+  IAM Group Membership:
+    order: 3
+    desc: "Membership for the IAM group. List any IAM users that should belong to this group."
+---
+
+resource "aws_iam_group" "{{__group_name}}" {
+  name = {{ group_name }}
+}
+
+resource "aws_iam_group_membership" "{{__group_name}}_group_membership" {
+  name = "{{ group_name }}_membership"
+  group = aws_iam_group.{{__group_name}}.name
+  users = [
+    {{# users }}
+      "{{ users }}",
+    {{/ users }}
+  ]
+}
+
+
+{{# iam_policies }}
+
+resource "aws_iam_group_policy_attachment" "{{__group_name}}_policy_attachment_{{ iam_policies.__index }}" {
+  group      = aws_iam_group.{{__group_name}}.name
+  policy_arn = resource.aws_iam_policy.{{iam_policies.policy_name}}_{{iam_policies.__index}}.arn
+}
+
+
+resource "aws_iam_policy" "{{ iam_policies.policy_name }}_{{ iam_policies.__index }}" {
+  name        = "{{ iam_policies.policy_name }}"
+  description = "Custom IAM policy for {{ group_name }} group."
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          {{ iam_policies.iam_action_list }}
+        ]
+        Effect   = [
+            {{ iam_policies.iam_effect }}
+        ]
+
+        Resource = [
+          {{# iam_policies.resources }}
+          {{ iam_policies.resources.resource }},
+          {{/ iam_policies.resources }}
+        ]
+      },
+    ]
+  })
+}
+{{/ iam_policies }}
