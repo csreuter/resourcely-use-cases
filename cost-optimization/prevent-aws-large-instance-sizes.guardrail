@@ -1,0 +1,4 @@
+GUARDRAIL "Prevent Large AWS instance sizes"
+  WHEN aws_instance
+    REQUIRE instance_type NOT MATCHES "*large*"
+  OVERRIDE WITH APPROVAL @default
