@@ -1,0 +1,6 @@
+# Below is a list of IAM Actions to be created as a Global Values Collection in Resourcely.
+# The Global Value Collection type should be `Text`
+
+Key	Label	Value
+allow	Allow	Allow
+deny	Deny	Deny
