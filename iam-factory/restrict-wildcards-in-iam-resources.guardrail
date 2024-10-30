@@ -1,0 +1,4 @@
+GUARDRAIL "[IAM] Disallow IAM policies with a wildcard resource public"
+  WHEN aws_iam_policy OR aws_iam_role_policy
+    REQUIRE NO policy.statement.resource = "*"
+  OVERRIDE WITH APPROVAL @security
