@@ -1,0 +1,36 @@
+# Note that this Blueprint utilizes a global value collection. You must add this global value collection (provided in the iam-factory root folder) to your account for this Blueprint to work.
+# To use this Blueprint, sign in to your Resourcely account, create a Blueprint, and publish it.
+
+---
+variables:
+  users.user_path:
+    suggest: /system/
+    desc: "If left empty, defaults to /. "
+  policy_arns:
+    required: false
+    desc: "Optional policy attachment. Fields only required if you add a policy."
+  user:
+    required: false
+    links_to: resource.aws_iam_user.name
+    desc: "Select the relevant user."
+  policy_arns.policy:
+    required: false
+    desc: "Input a policy arn, or add an IAM Policy to your shopping cart and it will appear here in a dropdown automatically."
+    links_to: resource.aws_iam_policy.arn 
+---
+
+{{# users }}
+resource "aws_iam_user" "{{users.name}}_{{users.__index}}" {
+  name = {{ users.name | desc: "The name must consist of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: =,.@-_.. User names are not distinguished by case. For example, you cannot create users named both 'TESTUSER' and 'testuser'." }}
+  path = {{ users.user_path }}
+}
+{{/ users }}
+
+{{# policy_arns }}
+resource "aws_iam_user_policy_attachment" "{{policy_arns.__index}}" {
+  user       = {{ policy_arns.user }}
+  policy_arn = {{ policy_arns.policy }}
+}
+{{/ policy_arns }}
+
+
