@@ -1,6 +1,6 @@
 # Resourcely Use Cases
 
-This is a collection of Resourcely Blueprints and Guardrails for a variety of use cases. 
+This is a collection of [Resourcely](https://www.resourcely.io) Blueprints and Guardrails for a variety of use cases. 
 
 [Blueprints](https://docs.resourcely.io/concepts/blueprints) are customizable templates used to configure and deploy infrastructure. With Blueprints, combine expert guidance with an automatically generated, rich UI. Developers follow fill out a guided form to configure infrastructure, and Terraform that meets your company’s expectations is generated and submitted via your preferred change management processes.
 
