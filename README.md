@@ -9,8 +9,8 @@ This is a collection of Resourcely Blueprints and Guardrails for a variety of us
 In order to use these objects, you must sign up for a free Resourcely account at https://portal.resourcely.io. Follow the [Quickstart](https://docs.resourcely.io/get-started/quickstart) to integrate into your existing Terraform runner (or follow our scaffolding repo to create one for free with GitHub Actions) and change management tooling.
 
 ## Use Cases
-- Cost optimization
-- IAM factory
+- [Cost optimization](https://github.com/csreuter/resourcely-use-cases/tree/main/cost-optimization)
+- [IAM factory](https://github.com/csreuter/resourcely-use-cases/tree/main/iam-factory)
 - Deploying AI infrastructure
 - Deletion prevention
 - Data encryption
