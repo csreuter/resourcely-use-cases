@@ -1,0 +1,10 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+---
+
+resource "aws_instance" "{{ __name }}" {
+  ami           = "ami-005e54dee72cc1d00" # AMI from AWS docs
+  instance_type = "{{ instance_type | default: "t3.micro" | desc: "AWS instance type. Best practice is to use .micro instances unless in production." }}"
+
+// This is for demonstration purposes only
