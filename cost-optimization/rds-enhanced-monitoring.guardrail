@@ -1,0 +1,5 @@
+GUARDRAIL "Disallow enhanced monitoring for non-prod environments"
+  WHEN aws_db_instance AND CONTEXT env != "prod"
+    REQUIRE monitoring_interval = 0
+
+# Note that this Guardrail uses Context. For this to be effective, you need to include a context question in your Blueprint that collects `env`.
