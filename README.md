@@ -11,11 +11,11 @@ In order to use these objects, you must sign up for a free Resourcely account at
 ## Use Cases
 - [Cost optimization](https://github.com/csreuter/resourcely-use-cases/tree/main/cost-optimization)
 - [IAM factory](https://github.com/csreuter/resourcely-use-cases/tree/main/iam-factory)
-- Deploying AI infrastructure (coming November 7th)
-- Deletion prevention (coming November 14th)
-- Data encryption (coming November 21st)
-- New account factory (coming December 5th)
-- Spinning up simple infrastructure (coming December 12th)
+- [Deploying AI infrastructure](https://github.com/csreuter/resourcely-use-cases/tree/main/ai-bedrock)
+- Deletion prevention (coming November 21st)
+- Data encryption (coming December 5th)
+- New account factory (coming December 12th)
+- Spinning up simple infrastructure (coming December 19th)
 - Creating analytical environments (coming December 19th)
 
 ## Using these Blueprints and Guardrails
