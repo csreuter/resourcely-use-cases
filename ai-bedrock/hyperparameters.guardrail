@@ -1,0 +1,5 @@
+GUARDRAIL "Hyperparameter guidelines for Titan models"
+  WHEN aws_bedrock_custom_model AND CONTEXT bedrock_model_type = "Titan"
+    REQUIRE hyperparameters.epochCount MATCHES REGEX "^[1-5]$" 
+      AND hyperparameters.batchSize = "1" 
+      AND hyperparameters.learningRate MATCHES REGEX "^(0\.0000001|\.000001|0\.00001)$" AND hyperparameters.learningRateWarmupSteps MATCHES REGEX "^[0-20]$"
