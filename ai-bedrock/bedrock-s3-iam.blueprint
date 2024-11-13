@@ -1,1 +1,183 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  YourIAMUserName:
+    suggest: "myusername"
+  model_id:
+    desc: "Select the foundational model to use."
+    global_value: aws_foundational_models
+  custom_model_name:
+    desc: "The name of the custom model."
+    required: true
+    suggest: "example-model"
+    group: Model configuration
+  job_name:
+    suggest: "bedrock-example-job-1"
+    desc: "The name of the job for the custom model."
+    required: true
+    group: Model configuration
+  base_model_identifier:
+    desc: "The ARN of the base foundation model to customize."
+    required: true
+    group: Model configuration
+  role_arn:
+    desc: "The ARN of the IAM role with permissions to manage the custom model."
+    required: true
+    links_to: resource.aws_iam_role.arn
+    group: Model configuration
+  epoch_count:
+    desc: "Number of epochs for training."
+    required: true
+    suggest: "1"
+    group: Hyperparameters
+  batch_size:
+    desc: "Batch size for the training job."
+    required: true
+    suggest: "8"
+    group: Hyperparameters
+  learning_rate:
+    desc: "Learning rate for the training job."
+    required: true
+    suggest: "0.00001"
+    group: Hyperparameters
+  early_stopping_patience:
+    desc: "Patience parameter for early stopping during training."
+    required: true
+    suggest: "6"
+    group: Hyperparameters
+  early_stopping_threshold:
+    desc: "Threshold for early stopping."
+    required: true
+    suggest: "0.01"
+    group: Hyperparameters
+  eval_percentage:
+    desc: "Percentage of the data used for evaluation."
+    required: true
+    suggest: "20.0"
+    group: Hyperparameters
+  output_s3_uri:
+    desc: "S3 URI for output data."
+    required: true
+    links_to: resource.aws_s3_bucket.id
+    group: Data configuration
+  training_data_s3_uri:
+    desc: "S3 URI for training data."
+    required: true
+    links_to: resource.aws_s3_bucket.id
+    group: Data configuration
+  bucket:
+    group: Data configuration
+    suggest: mybasicbedrockbucket
 
+groups:
+  Model configuration:
+    order: 1
+    desc: "Configuration for the custom model and its job settings."
+  Hyperparameters:
+    order: 2
+    desc: "Configuration for the training hyperparameters."
+  Data configuration:
+    order: 3
+    desc: "Configuration for the S3 locations of training and output data."
+  Bucket:
+    order: 4
+    desc: "The S3 bucket where the training data is stored"
+---
+
+data "aws_caller_identity" "current" {}
+
+data "aws_bedrock_foundation_model" "{{ __name }}" {
+  model_id = {{ model_id }}
+}
+
+resource "aws_bedrock_custom_model" "{{ __name }}" {
+  custom_model_name     = {{ custom_model_name }}
+  job_name              = {{ job_name }}
+  base_model_identifier = data.aws_bedrock_foundation_model.{{ __name }}.model_arn
+  role_arn              = {{ role_arn }}
+  customization_type    = "FINE_TUNING"
+
+  hyperparameters = {
+    epochCount             = {{ epoch_count }}
+    batchSize              = {{ batch_size }}
+    learningRate           = {{ learning_rate }}
+    earlyStoppingPatience  = {{ early_stopping_patience }}
+    earlyStoppingThreshold = {{ early_stopping_threshold }}
+    evalPercentage         = {{ eval_percentage }}
+  }
+
+ output_data_config {
+    s3_uri = "s3://{{ output_s3_uri }}/data/"
+  }
+
+  training_data_config {
+    s3_uri = "s3://{{ training_data_s3_uri }}/data/train.jsonl"
+  }
+}
+
+resource "aws_iam_role" "bedrock_{{ __name }}" {
+  assume_role_policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Principal" : { "Service" : "bedrock.amazonaws.com" },
+          "Action" : "sts:AssumeRole",
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_policy" "bedrock_access_policy_{{ __name }}" {
+  policy = jsonencode(
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:ListBucket",
+            "s3:PutObject"
+          ],
+          "Resource": [
+            "${ aws_s3_bucket.{{ __name }}.arn }",
+            "${ aws_s3_bucket.{{ __name }}.arn }/*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "bedrock:InvokeModel",
+            "bedrock:GetFoundationModel",
+            "bedrock:ListModels",
+            "bedrock:GetModel",
+            "bedrock:CreateModelCustomizationJob"
+          ],
+          "Resource": data.aws_bedrock_foundation_model.{{ __name }}.model_arn
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "attach_bedrock_access_policy_{{ __name }}" {
+  role       = aws_iam_role.bedrock_{{ __name }}.name
+  policy_arn = aws_iam_policy.bedrock_access_policy_{{ __name }}.arn
+}
+
+resource "aws_s3_bucket" "{{ __name }}" {
+  bucket = "{{ bucket }}"
+}
+
+resource "aws_s3_bucket_public_access_block" "{{ __name }}" {
+    bucket = aws_s3_bucket.{{ __name }}.id
+
+    block_public_acls       = true
+    block_public_policy     = true
+    ignore_public_acls      = true
+    restrict_public_buckets = true
+}
