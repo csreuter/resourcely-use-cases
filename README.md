@@ -12,9 +12,9 @@ In order to use these objects, you must sign up for a free Resourcely account at
 - [Cost optimization](https://github.com/csreuter/resourcely-use-cases/tree/main/cost-optimization)
 - [IAM factory](https://github.com/csreuter/resourcely-use-cases/tree/main/iam-factory)
 - [Deploying AI infrastructure](https://github.com/csreuter/resourcely-use-cases/tree/main/ai-bedrock)
-- Deletion prevention (coming November 21st)
+- [New account factory](https://github.com/csreuter/resourcely-use-cases/tree/main/aft)
 - Data encryption (coming December 5th)
-- New account factory (coming December 12th)
+- Deletion prevention (coming December 12th)
 - Spinning up simple infrastructure (coming December 19th)
 - Creating analytical environments (coming December 19th)
 
