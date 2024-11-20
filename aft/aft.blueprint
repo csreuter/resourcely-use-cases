@@ -1,0 +1,198 @@
+---
+variables:
+  aft_vpc_cidr:
+    default: 192.168.0.0/22
+    desc: CIDR Block to allocate to the AFT VPC
+    required: false
+    type: resource.aws_vpc.cidr_block
+    group: Network
+  vcs_provider:
+    suggest: "github"
+    desc: Customer VCS Provider - valid inputs are codecommit, bitbucket, github, or
+      githubenterprise
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Repository
+  aft_enable_vpc:
+    default: true
+    desc: Flag turning use of VPC on/off for AFT
+    required: false
+    type: bool
+    group: Network
+  ct_home_region:
+    desc: The region from which this module will be executed. This MUST be the same
+      region as Control Tower is deployed.
+    type: resource.aws_ssm_parameter.value
+    suggest: "us-east-1"
+    group: Location
+  audit_account_id:
+    desc: Audit Account Id
+    type: resource.aws_ssm_parameter.value
+    suggest: "123456789012"
+    group: Accounts
+  aft_vpc_endpoints:
+    default: true
+    desc: Flag turning VPC endpoints on/off for AFT VPC
+    required: false
+    type: bool
+    group: Network
+  ct_management_account_id:
+    desc: Control Tower Management Account Id
+    type: resource.aws_ssm_parameter.value
+    suggest: "111122223333"
+    group: Accounts
+  aft_management_account_id:
+    desc: AFT Management Account ID
+    suggest: "777788889999"
+    type: resource.aws_ssm_parameter.value
+    group: Accounts
+  account_request_repo_branch:
+    default: main
+    desc: Branch to source account request repo from
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Repository
+  tf_backend_secondary_region:
+    suggest: "us-west-2"
+    desc: AFT creates a backend for state tracking for its own state as well as OSS
+      cases. The backend's primary region is the same as the AFT region, but
+      this defines the secondary region to replicate to.
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Location
+  aft_vpc_public_subnet_01_cidr:
+    default: 192.168.2.0/25
+    desc: CIDR Block to allocate to the Public Subnet 01
+    required: false
+    type: resource.aws_subnet.cidr_block
+    group: Network
+  aft_vpc_public_subnet_02_cidr:
+    default: 192.168.2.128/25
+    desc: CIDR Block to allocate to the Public Subnet 02
+    required: false
+    type: resource.aws_subnet.cidr_block
+    group: Network
+  aft_vpc_private_subnet_01_cidr:
+    default: 192.168.0.0/24
+    desc: CIDR Block to allocate to the Private Subnet 01
+    required: false
+    type: resource.aws_subnet.cidr_block
+    group: Network
+  aft_vpc_private_subnet_02_cidr:
+    default: 192.168.1.0/24
+    desc: CIDR Block to allocate to the Private Subnet 02
+    required: false
+    type: resource.aws_subnet.cidr_block
+    group: Network
+  cloudwatch_log_group_retention:
+    default: 0
+    desc: Amount of days to keep CloudWatch Log Groups for Lambda functions. 0 =
+      Never Expire
+    required: false
+    type: resource.aws_cloudwatch_log_group.retention_in_days
+    group: General
+  log_archive_account_id:
+    desc: Log Archive Account Id
+    suggest: "444455556666"
+    type: resource.aws_ssm_parameter.value
+    group: Accounts
+  backup_recovery_point_retention:
+    default: 365
+    desc: Number of days to keep backup recovery points in AFT DynamoDB tables.
+      Default = Never Expire
+    required: false
+    type: resource.aws_backup_plan.rule.lifecycle.delete_after
+    group: General
+  global_customizations_repo_name:
+    suggest: "myorg/aft-global-customizations"
+    desc: Repository name for the global customization files. For non-CodeCommit
+      repos, name should be in the format of Org/Repo
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Repository
+  account_customizations_repo_name:
+    suggest: "myorg/aft-account-customizations"
+    desc: Repository name for the account customizations files. For non-CodeCommit
+      repos, name should be in the format of Org/Repo
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Repository
+  log_archive_bucket_object_expiration_days:
+    default: 365
+    desc: Amount of days to keep the objects stored in the AFT logging bucket
+    required: false
+    type: resource.aws_s3_bucket_lifecycle_configuration.rule.noncurrent_version_expiration.noncurrent_days
+    group: General
+  account_provisioning_customizations_repo_name:
+    suggest: "myorg/aft-account-provisioning-customizations"
+    desc: Repository name for the account provisioning customizations files. For
+      non-CodeCommit repos, name should be in the format of Org/Repo
+    required: false
+    type: resource.aws_ssm_parameter.value
+    group: Repository
+  aft_backend_bucket_access_logs_object_expiration_days:
+    default: 365
+    desc: Amount of days to keep the objects stored in the access logs bucket for
+      AFT backend buckets
+    required: false
+    type: resource.aws_s3_bucket_lifecycle_configuration.rule.noncurrent_version_expiration.noncurrent_days
+    group: General
+
+groups:
+  Accounts:
+    order: 1
+  General:
+    order: 2
+  Repository:
+    order: 3
+  Network:
+    order: 4
+  Location:
+    order: 5
+---
+
+module "{{ module_name }}_{{ __guid }}" {
+  source = "git::https://github.com/aws-ia/terraform-aws-control_tower_account_factory"
+
+  aft_vpc_cidr = {{ aft_vpc_cidr }}
+
+  vcs_provider = {{ vcs_provider }}
+
+  aft_enable_vpc = {{ aft_enable_vpc }}
+
+  ct_home_region = {{ ct_home_region }}
+
+  audit_account_id = {{ audit_account_id }}
+
+  aft_vpc_endpoints = {{ aft_vpc_endpoints }}
+
+  ct_management_account_id = {{ ct_management_account_id }}
+
+  aft_management_account_id = {{ aft_management_account_id }}
+
+  tf_backend_secondary_region = {{ tf_backend_secondary_region }}
+
+  aft_vpc_public_subnet_01_cidr = {{ aft_vpc_public_subnet_01_cidr }}
+
+  aft_vpc_public_subnet_02_cidr = {{ aft_vpc_public_subnet_02_cidr }}
+
+  aft_vpc_private_subnet_01_cidr = {{ aft_vpc_private_subnet_01_cidr }}
+
+  aft_vpc_private_subnet_02_cidr = {{ aft_vpc_private_subnet_02_cidr }}
+
+  cloudwatch_log_group_retention = {{ cloudwatch_log_group_retention }}
+
+  backup_recovery_point_retention = {{ backup_recovery_point_retention }}
+
+  global_customizations_repo_name = {{ global_customizations_repo_name }}
+
+  account_customizations_repo_name = {{ account_customizations_repo_name }}
+
+  log_archive_account_id = {{ log_archive_account_id }}
+
+  log_archive_bucket_object_expiration_days = {{ log_archive_bucket_object_expiration_days }}
+
+  account_provisioning_customizations_repo_name = {{ account_provisioning_customizations_repo_name }}
+
+  aft_backend_bucket_access_logs_object_expiration_days = {{ aft_backend_bucket_access_logs_object_expiration_days }}
+}
