@@ -1,0 +1,63 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the Cloud Function**.
+      - Must be unique within the specified GCP project and region
+      - See [Cloud Functions Naming Guidelines](https://cloud.google.com/functions/docs/concepts/overview#naming) for constraints
+    required: true
+    suggest: "encrypted-function"
+    group: General
+  runtime:
+    desc: |
+      The **runtime environment** for the function.
+      - Default: `nodejs14`
+      - Possible values: `nodejs12`, `nodejs14`, `nodejs16`, `python39`, `go116`, ...
+      - Learn more in the [Cloud Functions Runtime Documentation](https://cloud.google.com/functions/docs/concepts/exec#runtimes)
+    required: true
+    suggest: "nodejs14"
+    group: Function Configuration
+  entry_point:
+    desc: |
+      The **entry point** of the Cloud Function, i.e., the function to execute when the function is triggered.
+      - Should match the exported function in your source code
+    required: true
+    suggest: "main"
+    group: Function Configuration
+  source_archive_bucket:
+    desc: |
+      The **name of the Cloud Storage bucket** containing the function's source code.
+      - Must be a valid and accessible bucket name
+      - See [Source Code Management](https://cloud.google.com/functions/docs/deploying/source-code) for more details
+    required: true
+    links_to: resource.google_storage_bucket.id
+    group: Source Configuration
+  source_archive_object:
+    desc: |
+      The **name of the object** (file) in the source archive bucket.
+      - Must point to a valid .zip file containing the function code
+    required: true
+    group: Source Configuration
+  kms_key_name:
+    desc: |
+      The **KMS key** used to encrypt environment variables for the function.
+      - Specify the fully qualified KMS key resource name, e.g., `projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key`
+      - Learn more about [Cloud Functions Encryption](https://cloud.google.com/functions/docs/securing/encryption)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: Encryption Configuration
+---
+
+resource "google_cloudfunctions_function" "{{ __name }}" {
+  name        = "{{ name }}"
+  runtime     = "{{ runtime }}"
+  entry_point = "{{ entry_point }}"
+  region      = "us-central1"
+
+  source_archive_bucket = "{{ source_archive_bucket }}"
+  source_archive_object = "{{ source_archive_object }}"
+
+  kms_key_name = "{{ kms_key_name }}"
+}
