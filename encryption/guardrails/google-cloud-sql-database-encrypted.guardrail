@@ -1,0 +1,3 @@
+GUARDRAIL "Require encryption on Cloud SQL databases"
+  WHEN google_sql_database_instance
+    REQUIRE encryption_key_name EXISTS
