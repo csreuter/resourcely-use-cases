@@ -1,0 +1,27 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the Pub/Sub topic**.
+      - Must be unique within the GCP project
+      - See [Pub/Sub Topic Documentation](https://cloud.google.com/pubsub/docs/topics) for naming rules
+    required: true
+    suggest: "encrypted-topic"
+    group: General
+  encryption_key:
+    desc: |
+      The **KMS key** used to encrypt the Pub/Sub topic.
+      - Specify a valid Crypto Key resource
+      - Learn more about [Pub/Sub Encryption](https://cloud.google.com/pubsub/docs/encryption)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: Pub/Sub Configuration
+---
+
+resource "google_pubsub_topic" "{{ __name }}" {
+  name = "{{ name }}"
+
+  kms_key_name = "{{ encryption_key }}"
+}
