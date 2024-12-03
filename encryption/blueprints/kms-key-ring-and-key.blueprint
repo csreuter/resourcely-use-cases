@@ -1,0 +1,51 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The name of the resource being created, used for both the Key Ring and the Crypto Key.
+      - Must be unique within the GCP project
+      - Avoid using sensitive or identifiable information
+    required: true
+    suggest: "my-kms-key"
+    group: General
+  key_ring_id:
+    desc: |
+      The **ID of the Key Ring** to hold the encryption keys.
+      - Must be unique within the specified location
+      - For more information, see the [Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_key_ring)
+    suggest: "my-key-ring"
+    required: true
+    group: KMS Configuration
+  location:
+    desc: |
+      The **GCP location** for the Key Ring and Crypto Key.
+      - Default: `us-central1`
+      - Possible values: `us-central1`, `us-east1`, `europe-west1`, `asia-east1`, ...
+      - For best practices, see [GCP Regions and Zones](https://cloud.google.com/about/locations)
+    suggest: "us-central1"
+    required: true
+    group: KMS Configuration
+  rotation_period:
+    desc: |
+      The **rotation period** for the encryption key.
+      - Default: `30d` (30 days)
+      - Specify in the format `Xd`, e.g., `90d` for 90 days
+      - Learn more about key rotation [here](https://cloud.google.com/kms/docs/key-rotation)
+    suggest: "30d"
+    required: true
+    group: KMS Configuration
+---
+
+resource "google_kms_key_ring" "{{ __name }}" {
+  name     = "{{ name }}"
+  location = "{{ location }}"
+}
+
+resource "google_kms_crypto_key" "{{ __name }}" {
+  name            = "{{ name }}"
+  key_ring        = google_kms_key_ring.{{ __name }}.id
+  purpose         = "ENCRYPT_DECRYPT"
+  rotation_period = "{{ rotation_period }}"
+}
