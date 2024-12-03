@@ -1,0 +1,30 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the BigQuery dataset**.
+      - Must be unique within the GCP project
+      - See the [BigQuery Dataset Documentation](https://cloud.google.com/bigquery/docs/datasets-intro) for naming rules
+    required: true
+    suggest: "encrypted-dataset"
+    group: General
+  encryption_key:
+    desc: |
+      The **KMS key** used to encrypt the dataset.
+      - Must be a valid Crypto Key resource
+      - Learn more about [BigQuery Encryption](https://cloud.google.com/bigquery/docs/encryption-at-rest)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: BigQuery Configuration
+---
+
+resource "google_bigquery_dataset" "{{ __name }}" {
+  dataset_id = "{{ name }}"
+  location   = "US"
+
+  default_encryption_configuration {
+    kms_key_name = "{{ encryption_key }}"
+  }
+}
