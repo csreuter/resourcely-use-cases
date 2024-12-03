@@ -1,0 +1,38 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the Cloud SQL instance**.
+      - Must be unique within the project
+      - See [Cloud SQL Documentation](https://cloud.google.com/sql/docs/introduction) for instance naming rules
+    required: true
+    suggest: "encrypted-sql-instance"
+    group: General
+  database_version:
+    desc: |
+      The **version of the Cloud SQL database**.
+      - Default: `MYSQL_8_0`
+      - Possible values: `MYSQL_5_7`, `MYSQL_8_0`, `POSTGRES_13`, `POSTGRES_14`, ...
+      - See [Supported Database Versions](https://cloud.google.com/sql/docs/mysql/supported-versions)
+    required: true
+    suggest: "MYSQL_8_0"
+    group: SQL Configuration
+  encryption_key:
+    desc: |
+      The **KMS key** used to encrypt the database instance.
+      - Must link to a valid Crypto Key resource
+      - Learn more about [Cloud SQL Encryption](https://cloud.google.com/sql/docs/mysql/data-encryption)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: SQL Configuration
+---
+
+resource "google_sql_database_instance" "{{ __name }}" {
+  name             = "{{ name }}"
+  database_version = "{{ database_version }}"
+  region           = "us-central1"
+
+  encryption_key_name = "{{ encryption_key }}"
+}
