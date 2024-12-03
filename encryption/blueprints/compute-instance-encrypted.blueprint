@@ -1,0 +1,46 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the Compute Engine instance**.
+      - Used as the unique identifier for the instance
+      - See the [Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance) for details
+    required: true
+    suggest: "encrypted-instance"
+    group: General
+  machine_type:
+    desc: |
+      The **machine type** for the Compute Engine instance.
+      - Default: `e2-medium`
+      - Possible values: `e2-medium`, `e2-standard-2`, `n1-standard-1`, `e2-highmem-2`, `n2-standard-2`, ...
+      - Check [GCP machine types](https://cloud.google.com/compute/docs/machine-types) for more options
+    required: true
+    suggest: "e2-medium"
+    group: Compute Configuration
+  disk_encryption_key:
+    desc: |
+      The **KMS key** used to encrypt the disk.
+      - Must be a valid Crypto Key resource
+      - [Learn more about encrypted disks](https://cloud.google.com/compute/docs/disks/customer-supplied-encryption)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: Compute Configuration
+---
+
+resource "google_compute_instance" "{{ __name }}" {
+  name         = "{{ name }}"
+  machine_type = "{{ machine_type }}"
+  zone         = "us-central1-a"
+
+  boot_disk {
+    initialize_params {
+      image = "projects/debian-cloud/global/images/family/debian-11"
+    }
+
+    disk_encryption_key {
+      kms_key_self_link = "{{ disk_encryption_key }}"
+    }
+  }
+}
