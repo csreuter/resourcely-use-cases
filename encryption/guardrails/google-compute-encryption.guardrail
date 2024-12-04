@@ -1,0 +1,3 @@
+GUARDRAIL "Require encryption on Google Compute Instance"
+  WHEN google_compute_instance
+    REQUIRE boot_disk.kms_key_self_link OR boot_disk.disk_encryption_key_raw OR boot_disk.disk_encryption_key_sha256 EXISTS

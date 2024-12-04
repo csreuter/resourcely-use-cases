@@ -1,0 +1,3 @@
+GUARDRAIL "Require encryption on Google Storage Buckets"
+  WHEN google_storage_bucket
+    REQUIRE encryption.default_kms_key_name EXISTS

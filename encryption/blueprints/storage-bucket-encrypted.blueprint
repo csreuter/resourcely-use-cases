@@ -1,0 +1,30 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      The **name of the Cloud Storage bucket**.
+      - Must be unique globally within GCP
+      - Check [Bucket Naming Guidelines](https://cloud.google.com/storage/docs/naming-buckets) for constraints
+    required: true
+    suggest: "encrypted-bucket"
+    group: General
+  encryption_key:
+    desc: |
+      The **KMS key** used to encrypt the bucket.
+      - Specify a valid Crypto Key resource
+      - Learn more about [Bucket Encryption](https://cloud.google.com/storage/docs/encryption)
+    required: true
+    links_to: resource.google_kms_crypto_key.id
+    group: Storage Configuration
+---
+
+resource "google_storage_bucket" "{{ __name }}" {
+  name     = "{{ name }}"
+  location = "US"
+
+  encryption {
+    default_kms_key_name = "{{ encryption_key }}"
+  }
+}

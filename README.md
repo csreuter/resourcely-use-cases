@@ -13,7 +13,7 @@ In order to use these objects, you must sign up for a free Resourcely account at
 - [IAM factory](https://github.com/csreuter/resourcely-use-cases/tree/main/iam-factory)
 - [Deploying AI infrastructure](https://github.com/csreuter/resourcely-use-cases/tree/main/ai-bedrock)
 - [New account factory](https://github.com/csreuter/resourcely-use-cases/tree/main/aft)
-- Data encryption (coming December 5th)
+- [Encryption on GCP](https://github.com/csreuter/resourcely-use-cases/tree/main/encryption)
 - Deletion prevention (coming December 12th)
 - Spinning up simple infrastructure (coming December 19th)
 - Creating analytical environments (coming December 19th)
