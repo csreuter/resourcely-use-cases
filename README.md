@@ -14,7 +14,7 @@ In order to use these objects, you must sign up for a free Resourcely account at
 - [Deploying AI infrastructure](https://github.com/csreuter/resourcely-use-cases/tree/main/ai-bedrock)
 - [New account factory](https://github.com/csreuter/resourcely-use-cases/tree/main/aft)
 - [Encryption on GCP](https://github.com/csreuter/resourcely-use-cases/tree/main/encryption)
-- [Data pipelines](https://github.com/csreuter/resourcely-use-cases/tree/main/data-pipelines)
+- [Data pipelines](https://github.com/csreuter/resourcely-use-cases/tree/main/data-pipeline)
 - Deletion prevention (coming December 19th)
 - Spinning up simple infrastructure (coming December 19th)
 
