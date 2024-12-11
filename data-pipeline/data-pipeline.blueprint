@@ -1,0 +1,234 @@
+---
+constants:
+  __name: "{{ name }}_{{ __guid }}"
+variables:
+  name:
+    desc: |
+      **The base name for all resources in this Blueprint.**
+      - Must be unique within the GCP project
+    required: true
+    suggest: "my-cloud-function"
+    group: General
+  location:
+    desc: |
+      **The location for all GCP resources in this Blueprint.**
+      - Must be a valid GCP region
+    required: true
+    suggest: "us-central1"
+    group: General
+  service_account_name:
+    desc: |
+      **The name of the service account to be created.**
+      - Must be unique within the project
+    required: true
+    suggest: "test-gcf-sa"
+    group: Service Account
+  pubsub_topic_name:
+    desc: |
+      **The name of the Pub/Sub topic to be created.**
+      - Must be unique within the project
+    required: true
+    suggest: "functions2-topic"
+    group: Pub/Sub
+  bucket_prefix:
+    desc: |
+      **The prefix for the storage bucket name.**
+      - Ensures globally unique bucket names
+    required: true
+    suggest: "random-prefix"
+    group: Storage
+  bucket_object_name:
+    desc: |
+      **The name of the object stored in the bucket.**
+      - Typically the zip file for Cloud Function source code
+    required: true
+    suggest: "function-source.zip"
+    group: Storage
+  archive_file_type:
+    desc: |
+      **The archive file type.**
+      - Must be a valid `zip`
+    required: true
+    suggest: "zip"
+    group: Archive
+  archive_output_path:
+    desc: |
+      **The output path for the archived file.**
+      - Path where the archive will be stored
+    required: true
+    suggest: "/tmp/function-source.zip"
+    group: Archive
+  archive_source_dir:
+    desc: |
+      **The source directory for the archived file.**
+      - Path to the directory containing the function source code
+    required: true
+    suggest: "function-source/"
+    group: Archive
+  function_runtime:
+    desc: |
+      **The runtime for the Cloud Function.**
+      - Default: `nodejs16`
+      - Other options: `nodejs14`, `python39`, `go116`, ...
+      - See [GCP Supported Runtimes](https://cloud.google.com/functions/docs/concepts/exec#runtimes)
+    required: true
+    suggest: "nodejs16"
+    group: Cloud Function
+  function_entry_point:
+    desc: |
+      **The entry point for the Cloud Function.**
+      - Matches the exported function in your source code
+    required: true
+    suggest: "helloPubSub"
+    group: Cloud Function
+  available_memory:
+    desc: |
+      **The memory available for the Cloud Function.**
+      - Default: `256M`
+      - Other options: `128M`, `512M`, `1G`, ...
+    required: true
+    suggest: "256M"
+    group: Cloud Function
+  timeout_seconds:
+    desc: |
+      **The timeout for the Cloud Function.**
+      - Default: `60`
+      - Maximum: `540`
+    required: true
+    suggest: 60
+    group: Cloud Function
+  build_config_test:
+    desc: |
+      **Test environment variable for the build configuration.**
+      - Used for advanced build testing
+      - Feel free to change to match your function
+    required: false
+    suggest: "build_test"
+    group: Advanced
+  service_config_test:
+    desc: |
+      **Test environment variable for the service configuration.**
+      - Used for advanced service testing
+      - Feel free to change to match your function
+    required: false
+    suggest: "config_test"
+    group: Advanced
+  ingress_settings:
+    desc: |
+      **Ingress settings for the Cloud Function.**
+      - Default: `ALLOW_INTERNAL_ONLY`
+      - Other options: `ALLOW_ALL`, `ALLOW_INTERNAL_AND_GCLB`
+    required: false
+    suggest: "ALLOW_INTERNAL_ONLY"
+    group: Advanced
+  retry_policy:
+    desc: |
+      **Retry policy for the Cloud Function event trigger.**
+      - Default: `RETRY_POLICY_RETRY`
+      - Other options: `RETRY_POLICY_DO_NOT_RETRY`
+    required: false
+    suggest: "RETRY_POLICY_RETRY"
+    group: Advanced
+groups:
+  General:
+    desc: |
+      General configuration for the Blueprint, including resource names and locations.
+    order: 1
+  Service Account:
+    desc: |
+      Configuration related to the Google Cloud service account used by the Cloud Function.
+    order: 2
+  Pub/Sub:
+    desc: |
+      Configuration for the Pub/Sub topic that triggers the Cloud Function.
+    order: 3
+  Storage:
+    desc: |
+      Configuration for the storage bucket used to store Cloud Function source code.
+    order: 4
+  Archive:
+    desc: |
+      Configuration for archiving the Cloud Function source code into a deployable format.
+    order: 5
+  Cloud Function:
+    desc: |
+      Configuration for the Cloud Function, including runtime settings and environment variables.
+    order: 6
+  Advanced:
+    desc: |
+      Advanced configuration options for testing, ingress settings, and retry policies.
+    order: 7
+---
+
+# Service Account
+resource "google_service_account" "{{ __name }}" {
+  account_id   = "{{ service_account_name }}"
+  display_name = "Service Account for {{ name }}"
+}
+
+# Pub/Sub Topic
+resource "google_pubsub_topic" "{{ __name }}" {
+  name = "{{ pubsub_topic_name }}"
+}
+
+# Storage Bucket
+resource "google_storage_bucket" "{{ __name }}" {
+  name                        = "{{ bucket_prefix }}-gcf-source"
+  location                    = "{{ location }}"
+  uniform_bucket_level_access = true
+}
+
+# Archive File
+data "archive_file" "{{ __name }}" {
+  type        = "{{ archive_file_type }}"
+  output_path = "{{ archive_output_path }}"
+  source_dir  = "{{ archive_source_dir }}"
+}
+
+# Storage Bucket Object
+resource "google_storage_bucket_object" "{{ __name }}" {
+  name   = "{{ bucket_object_name }}"
+  bucket = google_storage_bucket.{{ __name }}.name
+  source = data.archive_file.{{ __name }}.output_path
+}
+
+# Cloud Function
+resource "google_cloudfunctions2_function" "{{ __name }}" {
+  name        = "{{ name }}"
+  location    = "{{ location }}"
+  description = "A new function for {{ name }}"
+
+  build_config {
+    runtime     = "{{ function_runtime }}"
+    entry_point = "{{ function_entry_point }}"
+    environment_variables = {
+      BUILD_CONFIG_TEST = "{{ build_config_test }}"
+    }
+    source {
+      storage_source {
+        bucket = google_storage_bucket.{{ __name }}.name
+        object = google_storage_bucket_object.{{ __name }}.name
+      }
+    }
+  }
+
+  service_config {
+    max_instance_count = 3
+    min_instance_count = 1
+    available_memory   = "{{ available_memory }}"
+    timeout_seconds    = {{ timeout_seconds }}
+    environment_variables = {
+      SERVICE_CONFIG_TEST = "{{ service_config_test }}"
+    }
+    ingress_settings               = "{{ ingress_settings }}"
+    all_traffic_on_latest_revision = true
+    service_account_email          = google_service_account.{{ __name }}.email
+  }
+
+  event_trigger {
+    trigger_region = "{{ location }}"
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.{{ __name }}.id
+    retry_policy   = "{{ retry_policy }}"
+  }
+}
